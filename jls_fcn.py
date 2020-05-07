@@ -135,7 +135,7 @@ class JLSFCN(nn.Module):
             nn.Conv2d(dims[0], c_output, 1),
             nn.Conv2d(dims[1], c_output, 1),
             nn.Conv2d(dims[2], c_output, 1)])
-        self.pred_sal = nn.Conv2d(dims[0], c_output, 8)
+        self.pred_sal = nn.Conv2d(dims[0], c_output, kernel_size=8)
         self.upsample = nn.ModuleList([
             nn.ConvTranspose2d(c_output, c_output, kernel_size=4, stride=2, padding=1),
             nn.ConvTranspose2d(c_output, c_output, kernel_size=4, stride=2, padding=1),
@@ -144,13 +144,14 @@ class JLSFCN(nn.Module):
         self.feature = getattr(thismodule, base)(pretrained=True)
         self.feature.feats = {}
         self.feature = procs[base](self.feature)
-        self.apply(fraze_bn)
+        #self.apply(fraze_bn)
 
     def forward(self, x, boxes=None, ids=None):
         self.feature.feats[x.device.index] = []
         feat32 = self.feature(x)
         feat8, feat16 = self.feature.feats[x.device.index]
         seg32 = self.pred_seg[0](feat32)
+        seg32x = seg32
         seg32 = self.upsample[0](seg32)
         seg16= self.pred_seg[1](feat16)
         seg16 = seg16+seg32
@@ -161,7 +162,7 @@ class JLSFCN(nn.Module):
         seg = self.upsample[2](seg)
         sal = self.pred_sal(feat32)
         sal = torch.sigmoid(sal)
-        return seg, sal
+        return seg, sal, seg32x
         """
         feats = self.feature.feats[x.device.index]
         feats += [x]

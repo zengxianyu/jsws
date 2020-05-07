@@ -19,7 +19,7 @@ batch_size = 8
 train_iters = 100000
 c_output = 21
 _num_show = 4
-experiment_name = "debug"
+experiment_name = "debug2"
 learn_rate = 1e-4
 
 path_save_valid = "output/validation/{}".format(experiment_name)
@@ -121,7 +121,7 @@ def train():
         img_sal_raw = img_sal
         img_sal = (img_sal.cuda()-mean)/std
 
-        pred_seg, v_sal = net(img_sal)
+        pred_seg, v_sal, _ = net(img_sal)
         pred_seg = torch.softmax(pred_seg, 1)
         bg = pred_seg[:, :1]
         fg = (pred_seg[:, 1:]*v_sal[:, 1:]).sum(1, keepdim=True)
@@ -138,9 +138,11 @@ def train():
         gt_cls = (gt_cls.sum(3).sum(2)>0).float().cuda()
         img_seg_raw = img_seg
         img_seg = (img_seg.cuda()-mean)/std
-        pred_seg, _ = net(img_seg)
+        pred_seg, _, seg32x = net(img_seg)
         pred_cls = pred_seg.mean(3).mean(2)
-        loss_cls = F.binary_cross_entropy_with_logits(pred_cls[:, 1:], gt_cls[:, 1:])
+        pred_cls32x = seg32x.mean(3).mean(2)
+        loss_cls = F.binary_cross_entropy_with_logits(pred_cls[:, 1:], gt_cls[:, 1:])\
+                + F.binary_cross_entropy_with_logits(pred_cls32x[:, 1:], gt_cls[:, 1:])
         loss = loss_cls+loss_sal
 
         optimizer.zero_grad()
