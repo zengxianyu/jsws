@@ -19,7 +19,7 @@ batch_size = 8
 train_iters = 100000
 c_output = 21
 _num_show = 4
-experiment_name = "debug2"
+experiment_name = "debug5"
 learn_rate = 1e-4
 
 path_save_valid = "output/validation/{}".format(experiment_name)
@@ -53,23 +53,23 @@ sal_val_gt_dir = '/home/zeng/data/datasets/saliency/ECSSD/masks'
 sal_train_loader = torch.utils.data.DataLoader(
     Saliency(sal_train_img_dir, sal_train_gt_dir,
            crop=0.9, flip=True, rotate=10, size=image_size, training=True),
-    batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
+    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
 sal_val_loader = torch.utils.data.DataLoader(
     Saliency(sal_val_img_dir, sal_val_gt_dir,
            crop=None, flip=False, rotate=None, size=image_size, training=False), 
-    batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
+    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
 
 voc_train_loader = torch.utils.data.DataLoader(
     VOC(voc_train_img_dir, voc_train_gt_dir, voc_train_split,
            crop=0.9, flip=True, rotate=10, size=image_size, training=True),
-    batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
+    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
 voc_val_loader = torch.utils.data.DataLoader(
     VOC(voc_val_img_dir, voc_val_gt_dir, voc_val_split,
            crop=None, flip=False, rotate=None, size=image_size, training=False),
-    batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
+    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
 
 def val():
@@ -174,6 +174,7 @@ def train():
             torch.save(save_dict, "{}/{}.pth".format(path_save_checkpoints, i))
             miou = val()
             writer.add_scalar("miou", miou, i)
+            log[i] = miou
             if miou > log['best']:
                 log['best'] = miou
                 log['best_it'] = i

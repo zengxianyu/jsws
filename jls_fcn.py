@@ -78,28 +78,20 @@ def proc_densenet(model):
     model.features.transition3[-2].register_forward_hook(hook)
     model.features.transition2[-2].register_forward_hook(hook)
 
-    #def remove_sequential(all_layers, network):
-    #    for layer in network.children():
-    #        if isinstance(layer, nn.Sequential):  # if sequential layer, apply recursively to layers in sequential layer
-    #            remove_sequential(all_layers, layer)
-    #        if list(layer.children()) == []:  # if leaf node, add it to list
-    #            all_layers.append(layer)
-    #model.features.transition3[-1].kernel_size = 1
-    #model.features.transition3[-1].stride = 1
-    #all_layers = []
-    #remove_sequential(all_layers, model.features.denseblock4)
-    #for m in all_layers:
-    #    if isinstance(m, nn.Conv2d) and m.kernel_size==(3, 3):
-    #        m.dilation = (4, 4)
-    #        m.padding = (4, 4)
-    #model.features.transition2[-1].kernel_size = 1
-    #model.features.transition2[-1].stride = 1
-    #all_layers = []
-    #remove_sequential(all_layers, model.features.denseblock3)
-    #for m in all_layers:
-    #    if isinstance(m, nn.Conv2d) and m.kernel_size==(3, 3):
-    #        m.dilation = (2, 2)
-    #        m.padding = (2, 2)
+    def remove_sequential(all_layers, network):
+        for layer in network.children():
+            if isinstance(layer, nn.Sequential):  # if sequential layer, apply recursively to layers in sequential layer
+                remove_sequential(all_layers, layer)
+            if list(layer.children()) == []:  # if leaf node, add it to list
+                all_layers.append(layer)
+    model.features.transition3[-1].kernel_size = 1
+    model.features.transition3[-1].stride = 1
+    all_layers = []
+    remove_sequential(all_layers, model.features.denseblock4)
+    for m in all_layers:
+        if isinstance(m, nn.Conv2d) and m.kernel_size==(3, 3):
+            m.dilation = (2, 2)
+            m.padding = (2, 2)
     model.classifier = None
     model.forward = model.features.forward
     return model
@@ -135,9 +127,10 @@ class JLSFCN(nn.Module):
             nn.Conv2d(dims[0], c_output, 1),
             nn.Conv2d(dims[1], c_output, 1),
             nn.Conv2d(dims[2], c_output, 1)])
-        self.pred_sal = nn.Conv2d(dims[0], c_output, kernel_size=8)
+        self.pred_sal = nn.Conv2d(dims[0], c_output, kernel_size=16)
         self.upsample = nn.ModuleList([
-            nn.ConvTranspose2d(c_output, c_output, kernel_size=4, stride=2, padding=1),
+            #nn.ConvTranspose2d(c_output, c_output, kernel_size=4, stride=2, padding=1),
+            Pass(),
             nn.ConvTranspose2d(c_output, c_output, kernel_size=4, stride=2, padding=1),
             nn.ConvTranspose2d(c_output, c_output, kernel_size=16, stride=8, padding=4)])
         self.apply(weight_init)

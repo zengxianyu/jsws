@@ -116,7 +116,7 @@ def evaluate_one(pp, num_class):
 def evaluate_iou(pred_dir, gt_dir, num_class):
     names = os.listdir(pred_dir)
     paths = [('{}/{}'.format(pred_dir, name), '{}/{}'.format(gt_dir, name)) for name in names]
-    pool = Pool(8)
+    pool = Pool(4)
     results = pool.map(partial(evaluate_one, num_class=num_class), paths)
     results = np.array(results)
     ins = results[:, 0, :]
