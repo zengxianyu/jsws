@@ -14,9 +14,11 @@ conda env create --file=pytorch_environments.yml
 ```
 
 ## Prepare Data
-[DUTS-train](https://maildluteducn-my.sharepoint.com/:u:/g/personal/zengyu_mail_dlut_edu_cn/EaJni8OcXzxJi1BDQsjqh4YBFlY_UlMNHvF6TGm43dIDWg?e=AhNHVk)
-[VOC2012](https://maildluteducn-my.sharepoint.com/:u:/g/personal/zengyu_mail_dlut_edu_cn/EVUJBg67ICxHqB_wfehc34gBQKi_RTJgnTCcUPnwxfTSIA?e=ef0AJw)
-[SegmentationClassAug](https://maildluteducn-my.sharepoint.com/:u:/g/personal/zengyu_mail_dlut_edu_cn/EXhmcGsGEaBPnhOffoNlh2UBUyZuB7Eck5WUbJ3f3pSSbA?e=vLLc34)
+[DUTS-train (Onedrive)](https://maildluteducn-my.sharepoint.com/:u:/g/personal/zengyu_mail_dlut_edu_cn/EaJni8OcXzxJi1BDQsjqh4YBFlY_UlMNHvF6TGm43dIDWg?e=AhNHVk)
+
+[VOC2012 (Onedrive)](https://maildluteducn-my.sharepoint.com/:u:/g/personal/zengyu_mail_dlut_edu_cn/EVUJBg67ICxHqB_wfehc34gBQKi_RTJgnTCcUPnwxfTSIA?e=ef0AJw)
+
+[SegmentationClassAug (Onedrive)](https://maildluteducn-my.sharepoint.com/:u:/g/personal/zengyu_mail_dlut_edu_cn/EXhmcGsGEaBPnhOffoNlh2UBUyZuB7Eck5WUbJ3f3pSSbA?e=vLLc34)
 
 ## Train stage 1
 train using image-level class labels and saliency ground-truth:
@@ -34,7 +36,7 @@ train a more complex model using the prediction of the model trained in the stag
 
 ## Saliency results
 
-[download saliency maps](http://ok.biu886.com:8000/JLWS-sal.zip) on datasets ECSSD, PSACALS, HKU-IS, DUT-OMRON, DUTS-test, SOD; [Google Drive](https://drive.google.com/open?id=1KqO8bhJn2StXGblBL_9V6-yM2CSOBNsz); [One Drive](https://1drv.ms/u/s!AqVkBGUQ01XGjxiqc5pdH20yPXz4?e=WzCpBW)
+[download saliency maps (Google Drive)](https://drive.google.com/open?id=1KqO8bhJn2StXGblBL_9V6-yM2CSOBNsz); [One Drive](https://1drv.ms/u/s!AqVkBGUQ01XGjxiqc5pdH20yPXz4?e=WzCpBW)
 
 ## Citation
 ```
