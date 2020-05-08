@@ -10,7 +10,7 @@ git submodule update
 
 prepare environment:
 ```
-conda env create --file=pytorch_environments.yml
+conda env create --file=pytorch_environments.yaml
 ```
 
 ## Prepare Data
