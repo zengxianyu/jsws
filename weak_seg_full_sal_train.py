@@ -9,6 +9,7 @@ import numpy as np
 from datasets import VOC, Saliency
 from datasets import palette as palette_voc
 from evaluate_seg import evaluate_iou
+from evaluate_sal import fm_and_mae
 import json
 import os
 from jls_fcn import JLSFCN
@@ -19,11 +20,15 @@ batch_size = 8
 train_iters = 100000
 c_output = 21
 _num_show = 4
-experiment_name = "debug5"
+experiment_name = "debug7"
 learn_rate = 1e-4
 
-path_save_valid = "output/validation/{}".format(experiment_name)
-if not os.path.exists(path_save_valid): os.mkdir(path_save_valid)
+path_save_valid_voc = "output/validation/{}_voc".format(experiment_name)
+if not os.path.exists(path_save_valid_voc): os.mkdir(path_save_valid_voc)
+
+path_save_valid_sal = "output/validation/{}_sal".format(experiment_name)
+if not os.path.exists(path_save_valid_sal): os.mkdir(path_save_valid_sal)
+
 path_save_checkpoints = "output/checkpoints/{}".format(experiment_name)
 if not os.path.exists(path_save_checkpoints): os.mkdir(path_save_checkpoints)
 
@@ -53,33 +58,54 @@ sal_val_gt_dir = '/home/zeng/data/datasets/saliency/ECSSD/masks'
 sal_train_loader = torch.utils.data.DataLoader(
     Saliency(sal_train_img_dir, sal_train_gt_dir,
            crop=0.9, flip=True, rotate=10, size=image_size, training=True),
-    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=False)
 
 sal_val_loader = torch.utils.data.DataLoader(
     Saliency(sal_val_img_dir, sal_val_gt_dir,
            crop=None, flip=False, rotate=None, size=image_size, training=False), 
-    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
-
+    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=False)
 
 voc_train_loader = torch.utils.data.DataLoader(
     VOC(voc_train_img_dir, voc_train_gt_dir, voc_train_split,
            crop=0.9, flip=True, rotate=10, size=image_size, training=True),
-    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=False)
 
 voc_val_loader = torch.utils.data.DataLoader(
     VOC(voc_val_img_dir, voc_val_gt_dir, voc_val_split,
            crop=None, flip=False, rotate=None, size=image_size, training=False),
-    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=False)
+
+def val_sal():
+    net.eval()
+    with torch.no_grad():
+        for it, (img, gt, batch_name, WW, HH) in tqdm(enumerate(sal_val_loader), desc='train'):
+            img = (img.cuda()-mean)/std
+            pred_seg, v_sal, _ = net(img)
+            pred_seg = torch.softmax(pred_seg, 1)
+            bg = pred_seg[:, :1]
+            fg = (pred_seg[:, 1:]*v_sal[:, 1:]).sum(1, keepdim=True)
+            fg = fg.squeeze(1)
+            for n, name in enumerate(batch_name):
+                msk =fg[n]
+                msk = msk.detach().cpu().numpy()
+                w = WW[n]
+                h = HH[n]
+                msk = Image.fromarray(msk.astype(np.uint8))
+                msk = msk.resize((w, h))
+                msk.save('{}/{}.png'.format(path_save_valid_sal, name), 'PNG')
+        fm, mae, _, _ = fm_and_mae(path_save_valid_sal, sal_val_gt_dir)
+        net.train()
+        return fm, mae
 
 
-def val():
+def val_voc():
     net.eval()
     with torch.no_grad():
         for it, (img, gt, batch_name, WW, HH) in tqdm(enumerate(voc_val_loader), desc='train'):
+            gt_cls = gt[:, None, ...] == torch.arange(c_output)[None, ..., None, None]
+            gt_cls = (gt_cls.sum(3).sum(2)>0).float().cuda()
             img = (img.cuda()-mean)/std
-            outputs = net(img)
-            batch_seg = outputs[0]
-            _, batch_seg = batch_seg.detach().max(1)
+            batch_seg, _, _ = net(img)
             for n, name in enumerate(batch_name):
                 msk =batch_seg[n]
                 msk = msk.detach().cpu().numpy()
@@ -89,8 +115,8 @@ def val():
                 msk = msk.convert('P')
                 msk.putpalette(palette_voc)
                 msk = msk.resize((w, h))
-                msk.save('{}/{}.png'.format(path_save_valid, name), 'PNG')
-        miou = evaluate_iou(path_save_valid, voc_val_gt_dir, c_output)
+                msk.save('{}/{}.png'.format(path_save_valid_voc, name), 'PNG')
+        miou = evaluate_iou(path_save_valid_voc, voc_val_gt_dir, c_output)
         net.train()
         return miou
 
@@ -102,12 +128,13 @@ def train():
     voc_it = 0
     sal_train_iter = iter(sal_train_loader)
     sal_it = 0
-    log = {'best': 0, 'best_it': 0}
+    log = {'best_miou': 0, 'best_it_miou': 0, 
+            'best_mae': 1000, 'best_it_mae':0, 'best_fm':0, 'best_it_fm':0}
     optimizer = torch.optim.Adam([{'params': net.parameters(), 
         'lr': learn_rate, 'betas':(0.95, 0.999)}])
 
     for i in range(train_iters):
-        if i % 4000 == 1:
+        if i % 2000 == 1:
             optimizer = torch.optim.Adam([{'params': net.parameters(), 
                 'lr': learn_rate*0.1, 'betas':(0.95, 0.999)}])
         """loss 1 """
@@ -170,16 +197,30 @@ def train():
             print("iter %d loss_sal %.4f; loss_cls %.4f"%(i, loss_sal.item(), loss_cls.item()))
         """validation"""
         if i!=0 and i % 500 == 0:
+            log[i] = {}
             save_dict = net.state_dict()
             torch.save(save_dict, "{}/{}.pth".format(path_save_checkpoints, i))
-            miou = val()
+            miou = val_voc()
             writer.add_scalar("miou", miou, i)
-            log[i] = miou
-            if miou > log['best']:
-                log['best'] = miou
-                log['best_it'] = i
-            print("validation: iter %d; miou %.4f; best %d:%.4f"%(i, miou, log['best_it'], log['best']))
-            with open("output/log.json", "w") as f:
+            log[i]['miou'] = miou
+            if miou > log['best_miou']:
+                log['best_miou'] = miou
+                log['best_it_miou'] = i
+            print("validation: iter %d; miou %.4f; best %d:%.4f"%(i, miou, log['best_it_miou'], log['best_miou']))
+            fm, mae = val_sal()
+            writer.add_scalar("mae", mae, i)
+            writer.add_scalar("fm", fm, i)
+            log[i]['mae'] = mae
+            log[i]['fm'] = fm
+            if mae < log['best_mae']:
+                log['best_mae'] = mae
+                log['best_it_mae'] = i
+            if fm > log['best_fm']:
+                log['best_fm'] = fm
+                log['best_it_fm'] = i
+            print("mae %.4f; best %d:%.4f"%(mae, log['best_it_mae'], log['best_mae']))
+            print("fm %.4f; best %d:%.4f"%(fm, log['best_it_fm'], log['best_fm']))
+            with open("output/{}.json".format(experiment_name), "w") as f:
                 json.dump(log, f)
 
 
