@@ -47,31 +47,6 @@ def fraze_bn(m):
         m.requires_grad=False
 
 
-def proc_resnet(model):
-    def hook(module, input, output):
-        model.feats[output.device.index] += [output]
-    model.layer3[-1].bn3.register_forward_hook(hook)
-    model.layer2[-1].bn3.register_forward_hook(hook)
-
-    # model.layer3[0].conv2.stride=(1, 1)
-    # model.layer3[0].downsample[0].stride=(1, 1)
-    # for m in model.layer3[1:].modules():
-    #     if isinstance(m, nn.Conv2d) and m.kernel_size==(3, 3):
-    #         m.dilation = (2, 2)
-    #         m.padding = (2, 2)
-
-    model.layer4[0].conv2.stride=(1, 1)
-    model.layer4[0].downsample[0].stride=(1, 1)
-
-    model.layer4[1].conv2.dilation = (4, 4)
-    model.layer4[1].conv2.padding = (4, 4)
-
-    model.layer4[2].conv2.dilation = (4, 4)
-    model.layer4[2].conv2.padding = (4, 4)
-    model.classifier = None
-    return model
-
-
 def proc_densenet(model):
     def hook(module, input, output):
         model.feats[output.device.index] += [output]
@@ -113,9 +88,7 @@ dim_dict = {
 }
 
 
-procs = {'densenet169': proc_densenet,
-         'vgg16': proc_vgg,
-         'resnet101': proc_resnet}
+procs = {'densenet169': proc_densenet}
 
 
 
