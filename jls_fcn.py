@@ -127,30 +127,9 @@ class JLSFCN(nn.Module):
 
         seg = self.upsample[2](seg)
         sal = self.pred_sal(feat32)
+        sal = sal.mean(3,keepdim=True).mean(2, keepdim=True)
         sal = torch.sigmoid(sal)
         return seg, sal, seg32x
-        """
-        feats = self.feature.feats[x.device.index]
-        feats += [x]
-        feats = feats[::-1]
-
-        pred_cls_fc = self.fc_cls(x.mean(3).mean(2))
-
-        pred_sal = self.cls_sal(x)
-        pred_sal = F.sigmoid(pred_sal)
-
-        pred = 0
-        for i, feat in enumerate(feats):
-            pred = self.preds[i](feat) + pred
-            if i == 0:
-                # pred_cls = F.avg_pool2d(pred, kernel_size=16).squeeze(3).squeeze(2)
-                pred_cls = pred.mean(3).mean(2)
-            pred = self.upscales[i](pred)
-        pred_cls_big = pred.mean(3).mean(2)
-        # pred_cls_big = F.avg_pool2d(pred, kernel_size=256).squeeze(3).squeeze(2)
-        return pred, pred_cls[:, 1:], pred_cls_big[:, 1:], pred_sal, pred_cls_fc
-        # return pred, pred_cls[:, 1:], pred_cls_big[:, 1:], pred_sal
-        """
 
 
 if __name__ == "__main__":

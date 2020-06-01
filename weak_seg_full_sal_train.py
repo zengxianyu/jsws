@@ -85,6 +85,7 @@ def val_sal():
             bg = pred_seg[:, :1]
             fg = (pred_seg[:, 1:]*v_sal[:, 1:]).sum(1, keepdim=True)
             fg = fg.squeeze(1)
+            fg = fg*255
             for n, name in enumerate(batch_name):
                 msk =fg[n]
                 msk = msk.detach().cpu().numpy()

@@ -121,8 +121,18 @@ class Saliency(_BaseData):
             img, gt = self.random_crop(img, gt)
         if self.flip:
             img, gt = self.random_flip(img, gt)
-        img = img.resize((self.size, self.size))
-        gt = gt.resize((self.size, self.size))
+        if self.size is not None:
+            img = img.resize((self.size, self.size))
+            gt = gt.resize((self.size, self.size))
+        else:
+            if min(w,h)<256:
+                ratio = 256.0/min(w,h)
+                w = int(ratio*w)
+                h = int(ratio*h)
+            w = (w//16+1)*16
+            h = (h//16+1)*16
+            img = img.resize((w,h))
+            gt = gt.resize((w,h))
 
         img = np.array(img, dtype=np.float64) / 255.0
         gt = np.array(gt, dtype=np.uint8)
@@ -213,9 +223,18 @@ class VOC(_BaseData):
         img = img.resize(gt.size)
         if self.training:
             img, gt = self.train_proc(img, gt)
-
-        img = img.resize((self.size, self.size))
-        gt = gt.resize((self.size, self.size))
+        if self.size is not None:
+            img = img.resize((self.size, self.size))
+            gt = gt.resize((self.size, self.size))
+        else:
+            if min(w,h)<256:
+                ratio = 256.0/min(w,h)
+                w = int(ratio*w)
+                h = int(ratio*h)
+            w = (w//16+1)*16
+            h = (h//16+1)*16
+            img = img.resize((w,h))
+            gt = gt.resize((w,h))
         img = np.array(img, dtype=np.float64) / 255.0
         img = img.transpose(2, 0, 1)
         img = torch.from_numpy(img).float()
