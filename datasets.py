@@ -183,6 +183,77 @@ index2name = ('background', 'airplane', 'bicycle', 'bird', 'boat', 'bottle', 'bu
               'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant',
               'sheep', 'sofa', 'train', 'tvmonitor')
 
+class VOCSELF(_BaseData):
+    def __init__(self, img_dir, gt_dir, self_dir, split_file, img_format='jpg', gt_format='png', size=256, training=True, crop=None, rotate=None, flip=False):
+        super(VOCSELF, self).__init__(crop=crop, rotate=rotate, flip=flip)
+        self.training = training
+        self.size = size
+        with open(split_file, 'r') as f:
+            names = f.read().split('\n')[:-1]
+        img_filenames = ['{}/{}.{}'.format(img_dir, name, img_format) for name in names]
+        self.img_filenames = img_filenames
+        self.names = names
+        gt_filenames = ['{}/{}.{}'.format(gt_dir, _name, gt_format) for _name in names]
+        self.gt_filenames = gt_filenames
+        self_filenames = ['{}/{}.{}'.format(self_dir, _name, gt_format) for _name in names]
+        self.self_filenames = self_filenames
+
+    def __len__(self):
+        return len(self.names)
+
+    def train_proc(self, img, gt, plbl):
+        data = (img, gt, plbl)
+        if self.rotate is not None:
+            data = self.random_rotate(*data)
+        if self.crop is not None:
+            data = self.random_crop(*data)
+        if self.flip:
+            data = self.random_flip(*data)
+        img = data[0]
+        gt = data[1]
+        plbl = data[2]
+        return img, gt, plbl
+
+    def __getitem__(self, index):
+        # load image
+        img_file = self.img_filenames[index]
+        img = Image.open(img_file).convert("RGB")
+        gt_file = self.gt_filenames[index]
+        plbl_file = self.self_filenames[index]
+        name = self.names[index]
+        w, h = img.size
+        gt = Image.open(gt_file).convert("P")
+        plbl = Image.open(plbl_file).convert("P")
+        img = img.resize(gt.size)
+        if self.training:
+            img, gt, plbl = self.train_proc(img, gt, plbl)
+        if self.size is not None:
+            img = img.resize((self.size, self.size))
+            gt = gt.resize((self.size, self.size))
+            plbl = plbl.resize((self.size, self.size))
+        else:
+            if min(w,h)<256:
+                ratio = 256.0/min(w,h)
+                w = int(ratio*w)
+                h = int(ratio*h)
+            w = (w//16+1)*16
+            h = (h//16+1)*16
+            img = img.resize((w,h))
+            gt = gt.resize((w,h))
+            plbl = plbl.resize((w,h))
+        img = np.array(img, dtype=np.float64) / 255.0
+        img = img.transpose(2, 0, 1)
+        img = torch.from_numpy(img).float()
+
+        gt = np.array(gt, dtype=np.int64)
+        gt = torch.from_numpy(gt).long()
+        plbl = np.array(plbl, dtype=np.int64)
+        plbl = torch.from_numpy(plbl).long()
+        if self.training:
+            return img, gt, plbl
+        else:
+            return img, gt, plbl, name, w, h
+
 
 class VOC(_BaseData):
     def __init__(self, img_dir, gt_dir, split_file, img_format='jpg', gt_format='png', size=256, training=True, crop=None, rotate=None, flip=False):

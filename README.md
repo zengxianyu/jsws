@@ -34,6 +34,10 @@ It should be easy to achieve MIOU>54 but you may need to try multiple times to g
 ## Train stage 2
 train a more complex model using the prediction of the model trained in the stage 1. 
 
+```shell
+syn_stage1.py
+```
+
 ## Saliency results
 
 [download saliency maps (Google Drive)](https://drive.google.com/open?id=1KqO8bhJn2StXGblBL_9V6-yM2CSOBNsz); [One Drive](https://1drv.ms/u/s!AqVkBGUQ01XGjxiqc5pdH20yPXz4?e=WzCpBW)
