@@ -20,7 +20,7 @@ batch_size = 8
 train_iters = 100000
 c_output = 21
 _num_show = 4
-experiment_name = "debug7"
+experiment_name = "debug8"
 learn_rate = 1e-4
 
 path_save_valid_voc = "output/validation/{}_voc".format(experiment_name)
@@ -107,6 +107,7 @@ def val_voc():
             gt_cls = (gt_cls.sum(3).sum(2)>0).float().cuda()
             img = (img.cuda()-mean)/std
             batch_seg, _, _ = net(img)
+            _, batch_seg = batch_seg.detach().max(1)
             for n, name in enumerate(batch_name):
                 msk =batch_seg[n]
                 msk = msk.detach().cpu().numpy()

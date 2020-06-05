@@ -256,9 +256,11 @@ class VOCSELF(_BaseData):
 
 
 class VOC(_BaseData):
-    def __init__(self, img_dir, gt_dir, split_file, img_format='jpg', gt_format='png', size=256, training=True, crop=None, rotate=None, flip=False):
+    def __init__(self, img_dir, gt_dir, split_file, img_format='jpg', gt_format='png', size=256, training=True,
+            crop=None, rotate=None, flip=False, tproc=False):
         super(VOC, self).__init__(crop=crop, rotate=rotate, flip=flip)
         self.training = training
+        self.tproc = tproc
         self.size = size
         with open(split_file, 'r') as f:
             names = f.read().split('\n')[:-1]
@@ -292,7 +294,7 @@ class VOC(_BaseData):
         w, h = img.size
         gt = Image.open(gt_file).convert("P")
         img = img.resize(gt.size)
-        if self.training:
+        if self.training or self.tproc:
             img, gt = self.train_proc(img, gt)
         if self.size is not None:
             img = img.resize((self.size, self.size))
