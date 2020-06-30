@@ -10,11 +10,13 @@ git submodule update
 
 prepare environment:
 ```
-conda env create --file=pytorch_environments.yaml
+conda env create --file=environments.yaml
 ```
 
 ## Prepare Data
 [DUTS-train (Onedrive)](https://maildluteducn-my.sharepoint.com/:u:/g/personal/zengyu_mail_dlut_edu_cn/EaJni8OcXzxJi1BDQsjqh4YBFlY_UlMNHvF6TGm43dIDWg?e=AhNHVk)
+
+[ECSSD (Onedrive)](https://maildluteducn-my.sharepoint.com/:u:/g/personal/zengyu_mail_dlut_edu_cn/EcLF1rbjDY9AvWmZ0mui9owB-l3t0zo270d1aK6E_Crp2w?e=fZME4U)
 
 [VOC2012 (Onedrive)](https://maildluteducn-my.sharepoint.com/:u:/g/personal/zengyu_mail_dlut_edu_cn/EVUJBg67ICxHqB_wfehc34gBQKi_RTJgnTCcUPnwxfTSIA?e=ef0AJw)
 
@@ -36,6 +38,7 @@ train a more complex model using the prediction of the model trained in the stag
 
 ```shell
 syn_stage1.py
+self_seg_full_sal_train.py
 ```
 
 ## Saliency results
