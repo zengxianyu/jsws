@@ -21,12 +21,12 @@ from multiprocessing import Pool
 image_size = 256
 batch_size = 8
 c_output = 21
-path_save_checkpoints = "./output/checkpoints/debug7/22000.pth"
-path_save_train_voc = "voc_train_pred_debug7"
-path_save_train_voc_prob = "voc_train_pred_debug7_prob"
-path_save_train_voc_crf = "voc_train_pred_debug7_softcrf"
-voc_save_gt_dir = "voc_train_pred_debug7_gt"
-voc_save_img_dir = "voc_train_pred_debug7_img"
+path_save_checkpoints = "stage1.pth"
+path_save_train_voc = "voc_train_pred_debug"
+path_save_train_voc_prob = "voc_train_pred_debug_prob"
+path_save_train_voc_crf = "voc_train_pred_debug_softcrf"
+voc_save_gt_dir = "voc_train_pred_debug_gt"
+voc_save_img_dir = "voc_train_pred_debug_img"
 if not os.path.exists(path_save_train_voc): os.mkdir(path_save_train_voc)
 if not os.path.exists(path_save_train_voc_prob): os.mkdir(path_save_train_voc_prob)
 if not os.path.exists(path_save_train_voc_crf): os.mkdir(path_save_train_voc_crf)
@@ -132,6 +132,6 @@ def proc_dcrf():
     return miou
 
 if __name__ == "__main__":
-    #miou = val_voc()
+    miou = val_voc()
     miou = proc_dcrf()
-    print(miou)
+    # print(miou)

@@ -1,0 +1,12 @@
+name: py36pytorch
+channels:
+  - defaults
+dependencies:
+  - matplotlib=3.1.3=py36_0
+  - pillow=7.1.2=py36hb39fc2d_0
+  - python=3.6.10=hcf32534_1
+  - pytorch=1.3.1=cuda100py36h53c1284_0
+  - torchvision=0.4.2=cuda100py36hecfc37a_0
+  - tqdm=4.45.0=py_0
+  - pip:
+    - pydensecrf==1.0rc3
