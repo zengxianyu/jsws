@@ -225,19 +225,19 @@ def train():
                 log['best_miou'] = miou
                 log['best_it_miou'] = i
             print("validation: iter %d; miou %.4f; best %d:%.4f"%(i, miou, log['best_it_miou'], log['best_miou']))
-            #fm, mae = val_sal()
-            #writer.add_scalar("mae", mae, i)
-            #writer.add_scalar("fm", fm, i)
-            #log[i]['mae'] = mae
-            #log[i]['fm'] = fm
-            #if mae < log['best_mae']:
-            #    log['best_mae'] = mae
-            #    log['best_it_mae'] = i
-            #if fm > log['best_fm']:
-            #    log['best_fm'] = fm
-            #    log['best_it_fm'] = i
-            #print("mae %.4f; best %d:%.4f"%(mae, log['best_it_mae'], log['best_mae']))
-            #print("fm %.4f; best %d:%.4f"%(fm, log['best_it_fm'], log['best_fm']))
+            fm, mae = val_sal()
+            writer.add_scalar("mae", mae, i)
+            writer.add_scalar("fm", fm, i)
+            log[i]['mae'] = mae
+            log[i]['fm'] = fm
+            if mae < log['best_mae']:
+                log['best_mae'] = mae
+                log['best_it_mae'] = i
+            if fm > log['best_fm']:
+                log['best_fm'] = fm
+                log['best_it_fm'] = i
+            print("mae %.4f; best %d:%.4f"%(mae, log['best_it_mae'], log['best_mae']))
+            print("fm %.4f; best %d:%.4f"%(fm, log['best_it_fm'], log['best_fm']))
             with open("output/{}.json".format(experiment_name), "w") as f:
                 json.dump(log, f)
 
