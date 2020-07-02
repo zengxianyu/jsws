@@ -22,6 +22,7 @@ c_output = 21
 _num_show = 4
 experiment_name = "debug1"
 learn_rate = 1e-4
+start_iter = 0
 
 path_save_valid_voc = "output/validation/{}_voc".format(experiment_name)
 if not os.path.exists(path_save_valid_voc): os.mkdir(path_save_valid_voc)
@@ -134,8 +135,11 @@ def train():
             'best_mae': 1000, 'best_it_mae':0, 'best_fm':0, 'best_it_fm':0}
     optimizer = torch.optim.Adam([{'params': net.parameters(), 
         'lr': learn_rate, 'betas':(0.95, 0.999)}])
+    if start_iter > 0:
+        net.load_state_dict(torch.load(os.path.join(
+            path_save_checkpoints, "{}.pth".format(start_iter))))
 
-    for i in range(train_iters):
+    for i in range(start_iter, train_iters):
         if i % 2000 == 1:
             _lr = learn_rate / float(10**(i//2000))
             optimizer = torch.optim.Adam([{'params': net.parameters(), 
