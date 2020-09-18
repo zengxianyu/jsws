@@ -141,7 +141,7 @@ def train():
             path_save_checkpoints, "{}.pth".format(start_iter))))
 
     for i in range(start_iter, train_iters):
-        if i % 3000 == 1:
+        if i % 3000 == 0:
             _lr = learn_rate / float(2**(i//3000))
             optimizer = torch.optim.Adam([{'params': net.parameters(), 
                 'lr': _lr, 'betas':(0.95, 0.999)}])
